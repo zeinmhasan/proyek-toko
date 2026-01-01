@@ -5,12 +5,14 @@ Aplikasi Point of Sale (POS) dan Manajemen Toko yang lengkap dengan fitur invent
 ## 🚀 Tech Stack
 
 ### Backend
+
 - **Node.js** + **Express** + **TypeScript**
 - **PostgreSQL** + **Prisma ORM**
 - **JWT Authentication**
 - **Multer** untuk upload gambar
 
 ### Frontend
+
 - **React 18** + **TypeScript**
 - **Vite** untuk build tool
 - **TailwindCSS** untuk styling
@@ -32,6 +34,7 @@ Aplikasi Point of Sale (POS) dan Manajemen Toko yang lengkap dengan fitur invent
 ## 🛠️ Setup Development
 
 ### Prerequisites
+
 - Node.js 18+
 - PostgreSQL 14+
 - npm atau yarn
@@ -104,6 +107,7 @@ npm run dev
 ## 📝 Environment Variables
 
 ### Backend (.env)
+
 ```env
 DATABASE_URL=postgresql://user:password@host:5432/dbname
 JWT_SECRET=your-secret-key
@@ -116,6 +120,7 @@ FRONTEND_URL=http://localhost:5173
 ```
 
 ### Frontend (.env)
+
 ```env
 VITE_API_URL=http://localhost:3001
 ```
