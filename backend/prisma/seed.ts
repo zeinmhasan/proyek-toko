@@ -30,7 +30,7 @@ async function main() {
   // ==================== USERS ====================
   console.log("👤 Creating users...");
   const hashedPassword = await bcrypt.hash("Passzein1", 12);
-  
+
   const admin = await prisma.user.upsert({
     where: { email: "zen@gmail.com" },
     update: {
@@ -107,7 +107,8 @@ async function main() {
       phone: "021-5551234",
       email: "info@zenresto.com",
       website: "www.zenresto.com",
-      receiptHeader: "🍽️ ZEN RESTAURANT & CAFE 🍽️\nMasakan Nusantara & International",
+      receiptHeader:
+        "🍽️ ZEN RESTAURANT & CAFE 🍽️\nMasakan Nusantara & International",
       receiptFooter: "Terima kasih telah berkunjung!\nFollow us @zenresto",
       showLogoOnReceipt: true,
       showAddressOnReceipt: true,
@@ -268,7 +269,8 @@ async function main() {
       create: {
         sku: "MU-004",
         name: "Nasi Campur Bali",
-        description: "Nasi dengan lauk khas Bali: ayam suwir, sate lilit, lawar",
+        description:
+          "Nasi dengan lauk khas Bali: ayam suwir, sate lilit, lawar",
         price: 45000,
         costPrice: 25000,
         stock: 50,
@@ -1033,26 +1035,54 @@ async function main() {
 
   // ==================== TRANSACTIONS (banyak data) ====================
   console.log("\n💳 Creating transactions...");
-  
+
   const allProducts = await prisma.product.findMany();
   const allUsers = await prisma.user.findMany();
-  
+
   // Generate 180+ transactions over the last 3 months
   const transactions = [];
   const startDate = new Date("2025-10-01");
   const endDate = new Date("2026-01-02");
-  
+
   const customerNames = [
-    "Pak Ahmad", "Bu Siti", "Mas Andi", "Mbak Dewi", "Pak Bambang",
-    "Bu Ratna", "Mas Rizki", "Mbak Ayu", "Pak Hendra", "Bu Lina",
-    "Mas Dedi", "Mbak Rina", "Pak Joko", "Bu Maya", "Mas Fajar",
-    "Keluarga Wijaya", "Keluarga Santoso", "Rombongan Kantor PT. ABC",
-    "Arisan Bu-bu", "Reuni SMA 2010", null, null, null, null, null
+    "Pak Ahmad",
+    "Bu Siti",
+    "Mas Andi",
+    "Mbak Dewi",
+    "Pak Bambang",
+    "Bu Ratna",
+    "Mas Rizki",
+    "Mbak Ayu",
+    "Pak Hendra",
+    "Bu Lina",
+    "Mas Dedi",
+    "Mbak Rina",
+    "Pak Joko",
+    "Bu Maya",
+    "Mas Fajar",
+    "Keluarga Wijaya",
+    "Keluarga Santoso",
+    "Rombongan Kantor PT. ABC",
+    "Arisan Bu-bu",
+    "Reuni SMA 2010",
+    null,
+    null,
+    null,
+    null,
+    null,
   ];
-  
+
   const customerPhones = [
-    "081234567890", "082345678901", "083456789012", "084567890123",
-    "085678901234", null, null, null, null, null
+    "081234567890",
+    "082345678901",
+    "083456789012",
+    "084567890123",
+    "085678901234",
+    null,
+    null,
+    null,
+    null,
+    null,
   ];
 
   let transactionCount = 0;
@@ -1060,11 +1090,11 @@ async function main() {
     const txDate = randomDate(startDate, endDate);
     const user = allUsers[Math.floor(Math.random() * allUsers.length)];
     const numItems = Math.floor(Math.random() * 5) + 1; // 1-5 items per transaction
-    
+
     // Select random products for this transaction
     const shuffled = [...allProducts].sort(() => 0.5 - Math.random());
     const selectedProducts = shuffled.slice(0, numItems);
-    
+
     let subtotal = 0;
     const items = selectedProducts.map((product) => {
       const qty = Math.floor(Math.random() * 3) + 1;
@@ -1078,25 +1108,38 @@ async function main() {
         subtotal: itemSubtotal,
       };
     });
-    
+
     const discount = Math.random() > 0.8 ? Math.floor(subtotal * 0.1) : 0; // 20% chance of 10% discount
     const tax = Math.floor((subtotal - discount) * 0.1); // 10% tax
     const total = subtotal - discount + tax;
-    
-    const paymentMethods = [PaymentMethod.CASH, PaymentMethod.QRIS, PaymentMethod.TRANSFER, PaymentMethod.CARD];
-    const paymentMethod = paymentMethods[Math.floor(Math.random() * paymentMethods.length)];
-    
-    const paidAmount = paymentMethod === PaymentMethod.CASH ? 
-      Math.ceil(total / 10000) * 10000 : // Round up to nearest 10k for cash
-      total;
-    
-    const statuses = [TransactionStatus.COMPLETED, TransactionStatus.COMPLETED, TransactionStatus.COMPLETED, 
-                      TransactionStatus.COMPLETED, TransactionStatus.COMPLETED, TransactionStatus.CANCELLED];
+
+    const paymentMethods = [
+      PaymentMethod.CASH,
+      PaymentMethod.QRIS,
+      PaymentMethod.TRANSFER,
+      PaymentMethod.CARD,
+    ];
+    const paymentMethod =
+      paymentMethods[Math.floor(Math.random() * paymentMethods.length)];
+
+    const paidAmount =
+      paymentMethod === PaymentMethod.CASH
+        ? Math.ceil(total / 10000) * 10000 // Round up to nearest 10k for cash
+        : total;
+
+    const statuses = [
+      TransactionStatus.COMPLETED,
+      TransactionStatus.COMPLETED,
+      TransactionStatus.COMPLETED,
+      TransactionStatus.COMPLETED,
+      TransactionStatus.COMPLETED,
+      TransactionStatus.CANCELLED,
+    ];
     const status = statuses[Math.floor(Math.random() * statuses.length)];
-    
+
     transactionCount++;
     const invoiceNumber = generateInvoiceNumber(transactionCount, txDate);
-    
+
     const transaction = await prisma.transaction.create({
       data: {
         invoiceNumber,
@@ -1108,8 +1151,10 @@ async function main() {
         changeAmount: paidAmount - total,
         paymentMethod,
         status,
-        customerName: customerNames[Math.floor(Math.random() * customerNames.length)],
-        customerPhone: customerPhones[Math.floor(Math.random() * customerPhones.length)],
+        customerName:
+          customerNames[Math.floor(Math.random() * customerNames.length)],
+        customerPhone:
+          customerPhones[Math.floor(Math.random() * customerPhones.length)],
         userId: user.id,
         createdAt: txDate,
         updatedAt: txDate,
@@ -1124,24 +1169,36 @@ async function main() {
 
   // ==================== FINANCIAL RECORDS ====================
   console.log("\n💰 Creating financial records...");
-  
+
   const incomeCategories = [
-    "Penjualan Makanan", "Penjualan Minuman", "Katering", "Event & Booking"
+    "Penjualan Makanan",
+    "Penjualan Minuman",
+    "Katering",
+    "Event & Booking",
   ];
-  
+
   const expenseCategories = [
-    "Bahan Baku", "Gaji Karyawan", "Listrik & Air", "Gas", "Peralatan Dapur",
-    "Renovasi", "Marketing", "Sewa Tempat", "Internet & Telepon", "Transportasi"
+    "Bahan Baku",
+    "Gaji Karyawan",
+    "Listrik & Air",
+    "Gas",
+    "Peralatan Dapur",
+    "Renovasi",
+    "Marketing",
+    "Sewa Tempat",
+    "Internet & Telepon",
+    "Transportasi",
   ];
-  
+
   const financialRecords = [];
-  
+
   // Create income records
   for (let i = 0; i < 60; i++) {
     const recordDate = randomDate(startDate, endDate);
-    const category = incomeCategories[Math.floor(Math.random() * incomeCategories.length)];
+    const category =
+      incomeCategories[Math.floor(Math.random() * incomeCategories.length)];
     const amount = Math.floor(Math.random() * 5000000) + 500000; // 500k - 5.5M
-    
+
     const record = await prisma.financialRecord.create({
       data: {
         type: FinancialType.INCOME,
@@ -1157,13 +1214,14 @@ async function main() {
     });
     financialRecords.push(record);
   }
-  
+
   // Create expense records
   for (let i = 0; i < 80; i++) {
     const recordDate = randomDate(startDate, endDate);
-    const category = expenseCategories[Math.floor(Math.random() * expenseCategories.length)];
+    const category =
+      expenseCategories[Math.floor(Math.random() * expenseCategories.length)];
     let amount: number;
-    
+
     // Vary amounts based on category
     if (category === "Gaji Karyawan") {
       amount = Math.floor(Math.random() * 10000000) + 5000000; // 5M - 15M
@@ -1176,7 +1234,7 @@ async function main() {
     } else {
       amount = Math.floor(Math.random() * 2000000) + 100000; // 100k - 2.1M
     }
-    
+
     const record = await prisma.financialRecord.create({
       data: {
         type: FinancialType.EXPENSE,
@@ -1196,27 +1254,60 @@ async function main() {
 
   // ==================== DEBT/RECEIVABLES ====================
   console.log("\n📋 Creating debts and receivables...");
-  
+
   const debtPersons = [
-    { name: "Supplier Bahan Pokok CV. Sumber Rejeki", phone: "021-5551234", address: "Jl. Pasar Baru No. 45" },
-    { name: "Supplier Sayuran Pak Karno", phone: "081234567001", address: "Pasar Induk Kramat Jati" },
-    { name: "Supplier Daging UD. Makmur", phone: "021-5559876", address: "Jl. Rumah Potong Hewan No. 12" },
-    { name: "Supplier Seafood PT. Laut Biru", phone: "081234567002", address: "Pelabuhan Muara Angke" },
-    { name: "Rental AC & Kulkas", phone: "081234567003", address: "Jl. Elektronik No. 88" },
-    { name: "PT. Catering Sukses", phone: "021-5553333", address: "Jl. Catering No. 1" },
-    { name: "Event Organizer Pak Budi", phone: "081234567004", address: "Jl. Event No. 25" },
-    { name: "Kantor PT. Global Tech", phone: "021-5554444", address: "Gedung Graha, Lt. 5" },
+    {
+      name: "Supplier Bahan Pokok CV. Sumber Rejeki",
+      phone: "021-5551234",
+      address: "Jl. Pasar Baru No. 45",
+    },
+    {
+      name: "Supplier Sayuran Pak Karno",
+      phone: "081234567001",
+      address: "Pasar Induk Kramat Jati",
+    },
+    {
+      name: "Supplier Daging UD. Makmur",
+      phone: "021-5559876",
+      address: "Jl. Rumah Potong Hewan No. 12",
+    },
+    {
+      name: "Supplier Seafood PT. Laut Biru",
+      phone: "081234567002",
+      address: "Pelabuhan Muara Angke",
+    },
+    {
+      name: "Rental AC & Kulkas",
+      phone: "081234567003",
+      address: "Jl. Elektronik No. 88",
+    },
+    {
+      name: "PT. Catering Sukses",
+      phone: "021-5553333",
+      address: "Jl. Catering No. 1",
+    },
+    {
+      name: "Event Organizer Pak Budi",
+      phone: "081234567004",
+      address: "Jl. Event No. 25",
+    },
+    {
+      name: "Kantor PT. Global Tech",
+      phone: "021-5554444",
+      address: "Gedung Graha, Lt. 5",
+    },
   ];
-  
+
   const debtsReceivables = [];
-  
+
   // Payables (Hutang ke supplier)
   for (let i = 0; i < 8; i++) {
     const person = debtPersons[i % debtPersons.length];
     const dueDate = randomDate(new Date("2025-12-01"), new Date("2026-02-28"));
     const amount = Math.floor(Math.random() * 15000000) + 2000000;
-    const paidAmount = Math.random() > 0.5 ? Math.floor(amount * Math.random()) : 0;
-    
+    const paidAmount =
+      Math.random() > 0.5 ? Math.floor(amount * Math.random()) : 0;
+
     let status: DebtStatus;
     if (paidAmount >= amount) {
       status = DebtStatus.PAID;
@@ -1227,7 +1318,7 @@ async function main() {
     } else {
       status = DebtStatus.PENDING;
     }
-    
+
     const debt = await prisma.debtReceivable.create({
       data: {
         type: DebtType.PAYABLE,
@@ -1242,7 +1333,7 @@ async function main() {
         description: `Pembelian bahan baku dan perlengkapan`,
       },
     });
-    
+
     // Add payments if partially paid
     if (paidAmount > 0) {
       await prisma.debtPayment.create({
@@ -1254,26 +1345,51 @@ async function main() {
         },
       });
     }
-    
+
     debtsReceivables.push(debt);
   }
-  
+
   // Receivables (Piutang dari pelanggan)
   const receivablePersons = [
-    { name: "PT. Maju Jaya - Katering Kantor", phone: "021-5556666", address: "Jl. Sudirman No. 100" },
-    { name: "Wedding Event Keluarga Susanto", phone: "081234567005", address: "Jl. Kebon Jeruk No. 55" },
-    { name: "Acara Ulang Tahun Anak Pak Rahmat", phone: "081234567006", address: "Jl. Kelapa Gading" },
-    { name: "PT. Teknologi Nusantara - Gathering", phone: "021-5557777", address: "Jl. Kuningan No. 88" },
-    { name: "Arisan RT 05 Bu Santi", phone: "081234567007", address: "Perumahan Hijau Asri" },
-    { name: "Catering Sekolah SDN 01", phone: "021-5558888", address: "Jl. Pendidikan No. 1" },
+    {
+      name: "PT. Maju Jaya - Katering Kantor",
+      phone: "021-5556666",
+      address: "Jl. Sudirman No. 100",
+    },
+    {
+      name: "Wedding Event Keluarga Susanto",
+      phone: "081234567005",
+      address: "Jl. Kebon Jeruk No. 55",
+    },
+    {
+      name: "Acara Ulang Tahun Anak Pak Rahmat",
+      phone: "081234567006",
+      address: "Jl. Kelapa Gading",
+    },
+    {
+      name: "PT. Teknologi Nusantara - Gathering",
+      phone: "021-5557777",
+      address: "Jl. Kuningan No. 88",
+    },
+    {
+      name: "Arisan RT 05 Bu Santi",
+      phone: "081234567007",
+      address: "Perumahan Hijau Asri",
+    },
+    {
+      name: "Catering Sekolah SDN 01",
+      phone: "021-5558888",
+      address: "Jl. Pendidikan No. 1",
+    },
   ];
-  
+
   for (let i = 0; i < 6; i++) {
     const person = receivablePersons[i];
     const dueDate = randomDate(new Date("2025-12-15"), new Date("2026-02-15"));
     const amount = Math.floor(Math.random() * 20000000) + 5000000;
-    const paidAmount = Math.random() > 0.4 ? Math.floor(amount * Math.random() * 0.7) : 0;
-    
+    const paidAmount =
+      Math.random() > 0.4 ? Math.floor(amount * Math.random() * 0.7) : 0;
+
     let status: DebtStatus;
     if (paidAmount >= amount) {
       status = DebtStatus.PAID;
@@ -1284,7 +1400,7 @@ async function main() {
     } else {
       status = DebtStatus.PENDING;
     }
-    
+
     const debt = await prisma.debtReceivable.create({
       data: {
         type: DebtType.RECEIVABLE,
@@ -1299,7 +1415,7 @@ async function main() {
         description: `Tagihan untuk layanan katering/event`,
       },
     });
-    
+
     if (paidAmount > 0) {
       await prisma.debtPayment.create({
         data: {
@@ -1310,7 +1426,7 @@ async function main() {
         },
       });
     }
-    
+
     debtsReceivables.push(debt);
   }
   console.log("✅ Created debts/receivables:", debtsReceivables.length);

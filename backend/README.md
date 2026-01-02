@@ -154,6 +154,3 @@ Setelah menjalankan seed:
 - **Email**: admin@tokoku.com
 - **Password**: Admin123!
 
-## 📄 License
-
-ISC
