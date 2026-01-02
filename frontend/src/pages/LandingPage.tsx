@@ -159,7 +159,7 @@ const LandingPage: React.FC = () => {
           >
             <div className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-white/80 backdrop-blur-sm text-blue-700 text-sm font-bold mb-10 border border-blue-100 shadow-sm hover:shadow-md transition-all cursor-default">
               <Zap size={18} className="fill-blue-600 text-blue-600" />
-              <span>Platform Manajemen Toko #1 di Indonesia</span>
+              <span>Platform Manajemen Toko Terintegrasi</span>
             </div>
 
             <h1 className="text-6xl md:text-8xl font-black text-slate-900 tracking-tight mb-8 leading-[1.1]">
@@ -180,7 +180,7 @@ const LandingPage: React.FC = () => {
                 onClick={() => navigate("/dashboard")}
                 className="w-full sm:w-auto px-10 py-5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full font-bold text-lg hover:shadow-2xl hover:shadow-blue-600/30 hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 group"
               >
-                Coba Gratis Sekarang
+                Coba Sekarang
                 <ArrowRight
                   size={20}
                   className="group-hover:translate-x-1 transition-transform"
