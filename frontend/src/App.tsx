@@ -13,6 +13,7 @@ import FinancePage from "./pages/FinancePage";
 import DebtPage from "./pages/DebtPage";
 import UserManagementPage from "./pages/UserManagementPage";
 import ProfilePage from "./pages/ProfilePage";
+import AIInsightsPage from "./pages/AIInsightsPage";
 // import SettingsPage from "./pages/SettingsPage";
 
 function App() {
@@ -46,6 +47,7 @@ function App() {
               }
             />
             <Route path="profile" element={<ProfilePage />} />
+            <Route path="ai-insights" element={<AIInsightsPage />} />
             {/* Pengaturan toko dihapus */}
           </Route>
         </Routes>

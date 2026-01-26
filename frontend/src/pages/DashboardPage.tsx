@@ -17,6 +17,15 @@ import {
   Receipt,
   AlertTriangle,
 } from "lucide-react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 import { dashboardService } from "../services/dashboard.service";
 import {
   DashboardData,
@@ -177,11 +186,6 @@ const DashboardPage: React.FC = () => {
     }
   };
 
-  // Calculate max for chart scaling
-  const maxSales = data?.salesChart
-    ? Math.max(...data.salesChart.map((d) => d.sales), 1)
-    : 1;
-
   return (
     <div className="space-y-8 pb-8">
       {/* Welcome Section */}
@@ -195,8 +199,8 @@ const DashboardPage: React.FC = () => {
             {period === "today"
               ? "hari ini"
               : period === "week"
-              ? "minggu ini"
-              : "bulan ini"}
+                ? "minggu ini"
+                : "bulan ini"}
             .
           </p>
         </div>
@@ -302,39 +306,49 @@ const DashboardPage: React.FC = () => {
                 <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
               </div>
             ) : data?.salesChart && data.salesChart.length > 0 ? (
-              <div className="h-64 flex items-end justify-between gap-2 px-2">
-                {data.salesChart.map((item, i) => {
-                  const heightPercent =
-                    maxSales > 0 ? (item.sales / maxSales) * 100 : 0;
-                  return (
-                    <div
-                      key={i}
-                      className="flex-1 flex flex-col items-center gap-2 group h-full"
-                    >
-                      <div className="relative w-full bg-slate-50 rounded-t-xl overflow-hidden flex-1 flex items-end">
-                        <div
-                          className="w-full bg-gradient-to-t from-blue-600 to-blue-400 opacity-80 group-hover:opacity-100 transition-all rounded-t-xl relative"
-                          style={{
-                            height: `${Math.max(heightPercent, 5)}%`,
-                            minHeight: "8px",
-                          }}
-                        >
-                          <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                            {formatCurrency(item.sales)}
-                            <br />
-                            <span className="text-slate-400">
-                              {item.transactions} transaksi
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <span className="text-xs text-slate-400 font-medium">
-                        {item.label}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
+              <ResponsiveContainer width="100%" height={256}>
+                <LineChart
+                  data={data.salesChart}
+                  margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis
+                    dataKey="label"
+                    stroke="#64748b"
+                    style={{ fontSize: "12px" }}
+                  />
+                  <YAxis
+                    stroke="#64748b"
+                    style={{ fontSize: "12px" }}
+                    tickFormatter={(value) =>
+                      value >= 1000000
+                        ? `${(value / 1000000).toFixed(1)}jt`
+                        : `${(value / 1000).toFixed(0)}rb`
+                    }
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "rgba(255, 255, 255, 0.98)",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "12px",
+                      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                    }}
+                    formatter={(value, name) => {
+                      if (name === "sales")
+                        return [formatCurrency(value as number), "Penjualan"];
+                      return [value, "Transaksi"];
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="sales"
+                    stroke="#2563eb"
+                    strokeWidth={3}
+                    dot={{ fill: "#2563eb", r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             ) : (
               <div className="h-64 flex items-center justify-center text-slate-400">
                 <div className="text-center">
@@ -479,10 +493,10 @@ const DashboardPage: React.FC = () => {
                         activity.type === "sale"
                           ? "bg-green-500"
                           : activity.type === "expense"
-                          ? "bg-red-500"
-                          : activity.type === "debt"
-                          ? "bg-orange-500"
-                          : "bg-blue-500"
+                            ? "bg-red-500"
+                            : activity.type === "debt"
+                              ? "bg-orange-500"
+                              : "bg-blue-500"
                       }`}
                     />
                     <div className="flex-1 min-w-0">

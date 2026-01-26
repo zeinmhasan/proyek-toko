@@ -16,6 +16,7 @@ import {
   ChevronDown,
   User,
   Settings,
+  Brain,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../contexts/AuthContext";
@@ -163,6 +164,12 @@ const DashboardLayout: React.FC = () => {
               label="Buku Hutang"
               onClick={() => setIsSidebarOpen(false)}
             />
+            <SidebarItem
+              to="/dashboard/ai-insights"
+              icon={Brain}
+              label="AI Insights"
+              onClick={() => setIsSidebarOpen(false)}
+            />
             {/* Pengaturan toko dihapus */}
 
             {/* Admin Only Menu */}
@@ -253,8 +260,8 @@ const DashboardLayout: React.FC = () => {
                     {user?.role === "ADMIN"
                       ? "Administrator"
                       : user?.role === "OWNER"
-                      ? "Owner"
-                      : "Kasir"}
+                        ? "Owner"
+                        : "Kasir"}
                   </span>
                 </div>
                 <ChevronDown

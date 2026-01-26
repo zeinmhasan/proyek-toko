@@ -18,6 +18,15 @@ import {
   Edit3,
   Receipt,
 } from "lucide-react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 import { financeService } from "../services/finance.service";
 import { expenseService } from "../services/expense.service";
 import {
@@ -68,10 +77,10 @@ const FinancePage = () => {
   const [summary, setSummary] = useState<FinanceSummary | null>(null);
   const [salesReport, setSalesReport] = useState<SalesReport | null>(null);
   const [topProducts, setTopProducts] = useState<TopProductsReport | null>(
-    null
+    null,
   );
   const [paymentStats, setPaymentStats] = useState<PaymentMethodStats | null>(
-    null
+    null,
   );
   const [categorySales, setCategorySales] =
     useState<CategorySalesReport | null>(null);
@@ -80,10 +89,10 @@ const FinancePage = () => {
   // Expense states
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [expenseCategories, setExpenseCategories] = useState<ExpenseCategory[]>(
-    []
+    [],
   );
   const [expenseSummary, setExpenseSummary] = useState<ExpenseSummary | null>(
-    null
+    null,
   );
   const [expenseLoading, setExpenseLoading] = useState(false);
   const [showExpenseModal, setShowExpenseModal] = useState(false);
@@ -242,11 +251,6 @@ const FinancePage = () => {
     TRANSFER: "Transfer",
     OTHER: "Lainnya",
   };
-
-  // Max revenue for chart scaling
-  const maxRevenue = salesReport
-    ? Math.max(...salesReport.data.map((d) => d.revenue), 1)
-    : 1;
 
   if (loading) {
     return (
@@ -436,7 +440,7 @@ const FinancePage = () => {
               <p className="text-gray-500 text-sm mb-1">Laba Bersih</p>
               <p className="text-2xl font-bold text-purple-600">
                 {formatCurrency(
-                  summary.profit.gross - (expenseSummary?.total || 0)
+                  summary.profit.gross - (expenseSummary?.total || 0),
                 )}
               </p>
             </div>
@@ -474,37 +478,55 @@ const FinancePage = () => {
               </div>
 
               {salesReport && salesReport.data.length > 0 ? (
-                <div className="h-64">
-                  <div className="flex items-end justify-between h-full gap-1">
-                    {salesReport.data.slice(-14).map((day) => (
-                      <div
-                        key={day.date}
-                        className="flex-1 flex flex-col items-center group"
-                      >
-                        <div className="relative w-full flex justify-center mb-2">
-                          <div
-                            className="w-full max-w-8 bg-blue-500 rounded-t-lg hover:bg-blue-600 transition-colors cursor-pointer relative group"
-                            style={{
-                              height: `${Math.max(
-                                (day.revenue / maxRevenue) * 180,
-                                4
-                              )}px`,
-                            }}
-                          >
-                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                              {formatCurrency(day.revenue)}
-                              <br />
-                              {day.count} transaksi
-                            </div>
-                          </div>
-                        </div>
-                        <span className="text-xs text-gray-400">
-                          {formatDate(day.date)}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                <ResponsiveContainer width="100%" height={256}>
+                  <LineChart
+                    data={salesReport.data.slice(-14).map((day) => ({
+                      ...day,
+                      label: formatDate(day.date),
+                    }))}
+                    margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                    <XAxis
+                      dataKey="label"
+                      stroke="#64748b"
+                      style={{ fontSize: "12px" }}
+                    />
+                    <YAxis
+                      stroke="#64748b"
+                      style={{ fontSize: "12px" }}
+                      tickFormatter={(value) =>
+                        value >= 1000000
+                          ? `${(value / 1000000).toFixed(1)}jt`
+                          : `${(value / 1000).toFixed(0)}rb`
+                      }
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "rgba(255, 255, 255, 0.98)",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: "12px",
+                        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                      }}
+                      formatter={(value, name) => {
+                        if (name === "revenue")
+                          return [
+                            formatCurrency(value as number),
+                            "Pendapatan",
+                          ];
+                        return [value, "Transaksi"];
+                      }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="revenue"
+                      stroke="#2563eb"
+                      strokeWidth={3}
+                      dot={{ fill: "#2563eb", r: 4 }}
+                      activeDot={{ r: 6 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
               ) : (
                 <div className="h-64 flex items-center justify-center text-gray-400">
                   Tidak ada data penjualan
@@ -586,10 +608,10 @@ const FinancePage = () => {
                           index === 0
                             ? "bg-yellow-100 text-yellow-700"
                             : index === 1
-                            ? "bg-gray-200 text-gray-700"
-                            : index === 2
-                            ? "bg-orange-100 text-orange-700"
-                            : "bg-gray-100 text-gray-600"
+                              ? "bg-gray-200 text-gray-700"
+                              : index === 2
+                                ? "bg-orange-100 text-orange-700"
+                                : "bg-gray-100 text-gray-600"
                         }`}
                       >
                         #{product.rank}
@@ -783,7 +805,7 @@ const FinancePage = () => {
               <div className="divide-y divide-gray-100">
                 {expenses.map((expense) => {
                   const category = expenseCategories.find(
-                    (c) => c.value === expense.category
+                    (c) => c.value === expense.category,
                   );
                   return (
                     <div
