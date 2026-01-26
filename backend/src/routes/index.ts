@@ -6,3 +6,4 @@ export { default as financeRoutes } from "./finance.routes.js";
 export { default as expenseRoutes } from "./expense.routes.js";
 export { default as debtRoutes } from "./debt.routes.js";
 export { default as dashboardRoutes } from "./dashboard.routes.js";
+export { default as aiRoutes } from "./ai.routes.js";

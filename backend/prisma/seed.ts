@@ -14,7 +14,7 @@ const prisma = new PrismaClient();
 // Helper function untuk generate random date dalam range
 function randomDate(start: Date, end: Date): Date {
   return new Date(
-    start.getTime() + Math.random() * (end.getTime() - start.getTime())
+    start.getTime() + Math.random() * (end.getTime() - start.getTime()),
   );
 }
 
@@ -1033,16 +1033,16 @@ async function main() {
   ]);
   console.log("✅ Created products:", products.length);
 
-  // ==================== TRANSACTIONS (banyak data) ====================
-  console.log("\n💳 Creating transactions...");
+  // ==================== TRANSACTIONS (MASSIVE DATA - 1 YEAR) ====================
+  console.log("\n💳 Creating transactions (1 year of data)...");
 
   const allProducts = await prisma.product.findMany();
   const allUsers = await prisma.user.findMany();
 
-  // Generate 180+ transactions over the last 3 months
+  // Generate 1500+ transactions over the last 12 months (simulating a busy restaurant)
   const transactions = [];
-  const startDate = new Date("2025-10-01");
-  const endDate = new Date("2026-01-02");
+  const startDate = new Date("2025-01-26"); // 1 year ago
+  const endDate = new Date("2026-01-26"); // today
 
   const customerNames = [
     "Pak Ahmad",
@@ -1065,6 +1065,19 @@ async function main() {
     "Rombongan Kantor PT. ABC",
     "Arisan Bu-bu",
     "Reuni SMA 2010",
+    "Pak Darmawan",
+    "Bu Sulistyo",
+    "Mas Agung",
+    "Mbak Putri",
+    "Pak Hendro",
+    "Bu Kartini",
+    "Keluarga Pratama",
+    "Group Office XYZ",
+    "Birthday Party Lia",
+    "Corporate Lunch",
+    null,
+    null,
+    null,
     null,
     null,
     null,
@@ -1078,6 +1091,9 @@ async function main() {
     "083456789012",
     "084567890123",
     "085678901234",
+    "081111222333",
+    "082222333444",
+    "083333444555",
     null,
     null,
     null,
@@ -1085,19 +1101,46 @@ async function main() {
     null,
   ];
 
+  // Generate transactions - more on weekends, lunch time, dinner time
   let transactionCount = 0;
-  for (let i = 0; i < 180; i++) {
-    const txDate = randomDate(startDate, endDate);
+  const totalTransactions = 1500; // Target 1500 transactions
+
+  for (let i = 0; i < totalTransactions; i++) {
+    // Create a weighted random date (more recent = more likely)
+    const daysAgo = Math.floor(Math.pow(Math.random(), 1.5) * 365); // Bias towards recent
+    const txDate = new Date(endDate);
+    txDate.setDate(txDate.getDate() - daysAgo);
+
+    // Add random time (business hours 10:00 - 22:00)
+    const hour =
+      Math.random() > 0.6
+        ? Math.random() > 0.5
+          ? 12 + Math.floor(Math.random() * 2)
+          : 18 + Math.floor(Math.random() * 3) // Peak hours
+        : 10 + Math.floor(Math.random() * 12); // Regular hours
+    txDate.setHours(
+      hour,
+      Math.floor(Math.random() * 60),
+      Math.floor(Math.random() * 60),
+    );
+
     const user = allUsers[Math.floor(Math.random() * allUsers.length)];
-    const numItems = Math.floor(Math.random() * 5) + 1; // 1-5 items per transaction
+
+    // Weekend and holidays = more items per transaction
+    const isWeekend = txDate.getDay() === 0 || txDate.getDay() === 6;
+    const baseItems = isWeekend ? 3 : 2;
+    const numItems = Math.floor(Math.random() * 5) + baseItems; // 2-7 items
 
     // Select random products for this transaction
     const shuffled = [...allProducts].sort(() => 0.5 - Math.random());
-    const selectedProducts = shuffled.slice(0, numItems);
+    const selectedProducts = shuffled.slice(
+      0,
+      Math.min(numItems, shuffled.length),
+    );
 
     let subtotal = 0;
     const items = selectedProducts.map((product) => {
-      const qty = Math.floor(Math.random() * 3) + 1;
+      const qty = Math.floor(Math.random() * 4) + 1; // 1-4 qty
       const price = Number(product.price);
       const itemSubtotal = price * qty;
       subtotal += itemSubtotal;
@@ -1109,12 +1152,18 @@ async function main() {
       };
     });
 
-    const discount = Math.random() > 0.8 ? Math.floor(subtotal * 0.1) : 0; // 20% chance of 10% discount
+    const discount =
+      Math.random() > 0.85
+        ? Math.floor(subtotal * (0.05 + Math.random() * 0.15))
+        : 0; // 15% chance of 5-20% discount
     const tax = Math.floor((subtotal - discount) * 0.1); // 10% tax
     const total = subtotal - discount + tax;
 
     const paymentMethods = [
       PaymentMethod.CASH,
+      PaymentMethod.CASH,
+      PaymentMethod.CASH,
+      PaymentMethod.QRIS,
       PaymentMethod.QRIS,
       PaymentMethod.TRANSFER,
       PaymentMethod.CARD,
@@ -1127,15 +1176,16 @@ async function main() {
         ? Math.ceil(total / 10000) * 10000 // Round up to nearest 10k for cash
         : total;
 
-    const statuses = [
-      TransactionStatus.COMPLETED,
-      TransactionStatus.COMPLETED,
-      TransactionStatus.COMPLETED,
-      TransactionStatus.COMPLETED,
-      TransactionStatus.COMPLETED,
-      TransactionStatus.CANCELLED,
-    ];
-    const status = statuses[Math.floor(Math.random() * statuses.length)];
+    // 95% completed, 3% cancelled, 2% refunded
+    const statusRoll = Math.random();
+    let status: TransactionStatus;
+    if (statusRoll > 0.05) {
+      status = TransactionStatus.COMPLETED;
+    } else if (statusRoll > 0.02) {
+      status = TransactionStatus.CANCELLED;
+    } else {
+      status = TransactionStatus.REFUNDED;
+    }
 
     transactionCount++;
     const invoiceNumber = generateInvoiceNumber(transactionCount, txDate);
@@ -1164,11 +1214,21 @@ async function main() {
       },
     });
     transactions.push(transaction);
+
+    // Progress indicator
+    if (transactionCount % 300 === 0) {
+      console.log(
+        `   📊 Progress: ${transactionCount}/${totalTransactions} transactions...`,
+      );
+    }
   }
   console.log("✅ Created transactions:", transactions.length);
 
-  // ==================== FINANCIAL RECORDS ====================
-  console.log("\n💰 Creating financial records...");
+  // ==================== FINANCIAL RECORDS (1 YEAR OF DATA) ====================
+  console.log("\n💰 Creating financial records (1 year of data)...");
+
+  const finStartDate = new Date("2025-01-26");
+  const finEndDate = new Date("2026-01-26");
 
   const incomeCategories = [
     "Penjualan Makanan",
@@ -1192,63 +1252,101 @@ async function main() {
 
   const financialRecords = [];
 
-  // Create income records
-  for (let i = 0; i < 60; i++) {
-    const recordDate = randomDate(startDate, endDate);
-    const category =
-      incomeCategories[Math.floor(Math.random() * incomeCategories.length)];
-    const amount = Math.floor(Math.random() * 5000000) + 500000; // 500k - 5.5M
+  // Create income records - monthly (12 months x 4 categories = 48, plus random extra)
+  for (let month = 0; month < 12; month++) {
+    for (const category of incomeCategories) {
+      const recordDate = new Date(finStartDate);
+      recordDate.setMonth(recordDate.getMonth() + month);
+      recordDate.setDate(Math.floor(Math.random() * 28) + 1); // Random day 1-28
 
-    const record = await prisma.financialRecord.create({
-      data: {
-        type: FinancialType.INCOME,
-        category,
-        amount,
-        description: `Pendapatan dari ${category.toLowerCase()}`,
-        date: recordDate,
-        reference: `INC-${Date.now()}-${i}`,
-        userId: admin.id,
-        createdAt: recordDate,
-        updatedAt: recordDate,
-      },
-    });
-    financialRecords.push(record);
+      let amount: number;
+      if (category === "Penjualan Makanan") {
+        amount = Math.floor(Math.random() * 20000000) + 15000000; // 15M - 35M
+      } else if (category === "Penjualan Minuman") {
+        amount = Math.floor(Math.random() * 10000000) + 5000000; // 5M - 15M
+      } else if (category === "Katering") {
+        amount =
+          Math.random() > 0.3
+            ? Math.floor(Math.random() * 15000000) + 5000000
+            : 0; // 70% chance
+      } else {
+        amount =
+          Math.random() > 0.5
+            ? Math.floor(Math.random() * 8000000) + 2000000
+            : 0; // 50% chance
+      }
+
+      if (amount > 0) {
+        const record = await prisma.financialRecord.create({
+          data: {
+            type: FinancialType.INCOME,
+            category,
+            amount,
+            description: `Pendapatan ${category.toLowerCase()} bulan ${recordDate.toLocaleDateString("id-ID", { month: "long", year: "numeric" })}`,
+            date: recordDate,
+            reference: `INC-${recordDate.getFullYear()}${String(recordDate.getMonth() + 1).padStart(2, "0")}-${category.substring(0, 3).toUpperCase()}`,
+            userId: admin.id,
+            createdAt: recordDate,
+            updatedAt: recordDate,
+          },
+        });
+        financialRecords.push(record);
+      }
+    }
   }
 
-  // Create expense records
-  for (let i = 0; i < 80; i++) {
-    const recordDate = randomDate(startDate, endDate);
-    const category =
-      expenseCategories[Math.floor(Math.random() * expenseCategories.length)];
-    let amount: number;
+  // Create expense records - monthly recurring
+  for (let month = 0; month < 12; month++) {
+    for (const category of expenseCategories) {
+      const recordDate = new Date(finStartDate);
+      recordDate.setMonth(recordDate.getMonth() + month);
+      recordDate.setDate(Math.floor(Math.random() * 28) + 1);
 
-    // Vary amounts based on category
-    if (category === "Gaji Karyawan") {
-      amount = Math.floor(Math.random() * 10000000) + 5000000; // 5M - 15M
-    } else if (category === "Bahan Baku") {
-      amount = Math.floor(Math.random() * 8000000) + 2000000; // 2M - 10M
-    } else if (category === "Sewa Tempat") {
-      amount = 25000000; // Fixed rent
-    } else if (category === "Listrik & Air" || category === "Gas") {
-      amount = Math.floor(Math.random() * 3000000) + 500000; // 500k - 3.5M
-    } else {
-      amount = Math.floor(Math.random() * 2000000) + 100000; // 100k - 2.1M
+      let amount: number;
+      let shouldCreate = true;
+
+      // Vary amounts based on category
+      if (category === "Gaji Karyawan") {
+        amount = 45000000 + Math.floor(Math.random() * 5000000); // 45M - 50M monthly
+      } else if (category === "Bahan Baku") {
+        amount = Math.floor(Math.random() * 15000000) + 8000000; // 8M - 23M
+      } else if (category === "Sewa Tempat") {
+        amount = 25000000; // Fixed rent
+      } else if (category === "Listrik & Air") {
+        amount = Math.floor(Math.random() * 3000000) + 2000000; // 2M - 5M
+      } else if (category === "Gas") {
+        amount = Math.floor(Math.random() * 2000000) + 1000000; // 1M - 3M
+      } else if (category === "Renovasi") {
+        shouldCreate = Math.random() > 0.8; // Only 20% months have renovation
+        amount = Math.floor(Math.random() * 10000000) + 5000000; // 5M - 15M
+      } else if (category === "Peralatan Dapur") {
+        shouldCreate = Math.random() > 0.6; // 40% months
+        amount = Math.floor(Math.random() * 5000000) + 500000; // 500k - 5.5M
+      } else if (category === "Marketing") {
+        amount = Math.floor(Math.random() * 3000000) + 500000; // 500k - 3.5M
+      } else if (category === "Internet & Telepon") {
+        amount = Math.floor(Math.random() * 500000) + 500000; // 500k - 1M
+      } else {
+        amount = Math.floor(Math.random() * 2000000) + 200000; // 200k - 2.2M
+      }
+
+      if (shouldCreate && amount > 0) {
+        const record = await prisma.financialRecord.create({
+          data: {
+            type: FinancialType.EXPENSE,
+            category,
+            amount,
+            description: `Pembayaran ${category.toLowerCase()} bulan ${recordDate.toLocaleDateString("id-ID", { month: "long", year: "numeric" })}`,
+            date: recordDate,
+            reference: `EXP-${recordDate.getFullYear()}${String(recordDate.getMonth() + 1).padStart(2, "0")}-${category.substring(0, 3).toUpperCase()}`,
+            userId: admin.id,
+            createdAt: recordDate,
+            updatedAt: recordDate,
+          },
+        });
+        financialRecords.push(record);
+      }
     }
-
-    const record = await prisma.financialRecord.create({
-      data: {
-        type: FinancialType.EXPENSE,
-        category,
-        amount,
-        description: `Pembayaran untuk ${category.toLowerCase()}`,
-        date: recordDate,
-        reference: `EXP-${Date.now()}-${i}`,
-        userId: admin.id,
-        createdAt: recordDate,
-        updatedAt: recordDate,
-      },
-    });
-    financialRecords.push(record);
   }
   console.log("✅ Created financial records:", financialRecords.length);
 

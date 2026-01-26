@@ -12,7 +12,7 @@ export class SettingsService {
     return settings;
   }
 
-  async updateSettings(data: UpdateSettingsInput["body"]) {
+  async updateSettings(data: UpdateSettingsInput) {
     let settings = await prisma.storeSettings.findFirst();
     if (!settings) {
       settings = await prisma.storeSettings.create({ data: {} });

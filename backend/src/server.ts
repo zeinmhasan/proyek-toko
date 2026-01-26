@@ -15,6 +15,7 @@ import financeRoutes from "./routes/finance.routes.js";
 import expenseRoutes from "./routes/expense.routes.js";
 import debtRoutes from "./routes/debt.routes.js";
 import dashboardRoutes from "./routes/dashboard.routes.js";
+import aiRoutes from "./routes/ai.routes.js";
 
 const app: Express = express();
 
@@ -23,7 +24,7 @@ app.use(
   cors({
     origin: config.frontendUrl,
     credentials: true,
-  })
+  }),
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -50,6 +51,7 @@ app.use("/api/finance", financeRoutes);
 app.use("/api/expenses", expenseRoutes);
 app.use("/api/debts", debtRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/ai", aiRoutes);
 
 // Pengaturan toko dihapus
 app.use("/api/receipt", require("./routes/receipt.routes.js").default);
