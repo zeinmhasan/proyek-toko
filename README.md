@@ -36,8 +36,30 @@ Aplikasi Point of Sale (POS) dan Manajemen Toko yang lengkap dengan fitur invent
 ### Prerequisites
 
 - Node.js 18+
-- PostgreSQL 14+
+- Docker & Docker Compose
 - npm atau yarn
+
+### 🐳 Menjalankan Database dengan Docker
+
+Proyek ini menggunakan Docker untuk menjalankan database PostgreSQL.
+
+```bash
+cd backend
+
+# Jalankan PostgreSQL container
+docker-compose up -d
+
+# Cek apakah container berjalan
+docker ps
+```
+
+Database akan berjalan di port `5433` dengan konfigurasi:
+
+- **Host:** localhost
+- **Port:** 5433
+- **Database:** tokoku_db
+- **Username:** tokoku
+- **Password:** tokoku123
 
 ### Backend Setup
 
@@ -49,7 +71,8 @@ npm install
 
 # Setup environment variables
 cp .env.example .env
-# Edit .env dengan konfigurasi database Anda
+# Edit .env dengan konfigurasi berikut (untuk Docker):
+# DATABASE_URL=postgresql://tokoku:tokoku123@localhost:5433/tokoku_db
 
 # Generate Prisma Client
 npm run db:generate
@@ -57,12 +80,31 @@ npm run db:generate
 # Run migrations
 npm run db:migrate
 
-# (Optional) Seed database
+# (Optional) Seed database dengan data contoh
 npm run db:seed
 
 # Start development server
 npm run dev
 ```
+
+### 🌱 Database Seeding
+
+Untuk mengisi database dengan data contoh (produk, kategori, transaksi, dll), jalankan:
+
+```bash
+cd backend
+npm run db:seed
+```
+
+Seed akan membuat:
+
+- **Admin user:** zen@gmail.com / Passzein1
+- **Cashier users:** siti@zenresto.com, budi@zenresto.com, dewi@zenresto.com (password: Cashier123)
+- **Store settings**
+- **Kategori produk**
+- **Produk contoh**
+- **Transaksi contoh**
+- **Data keuangan contoh**
 
 ### Frontend Setup
 
@@ -74,11 +116,35 @@ npm install
 
 # Setup environment variables
 cp .env.example .env
-# Edit VITE_API_URL jika perlu
+# Edit VITE_API_URL jika perlu (default: http://localhost:3001)
 
 # Start development server
 npm run dev
 ```
+
+### 🚀 Menjalankan Keseluruhan Proyek
+
+1. **Jalankan Docker untuk database:**
+
+   ```bash
+   cd backend && docker-compose up -d
+   ```
+
+2. **Jalankan Backend (terminal 1):**
+
+   ```bash
+   cd backend && npm run dev
+   ```
+
+3. **Jalankan Frontend (terminal 2):**
+
+   ```bash
+   cd frontend && npm run dev
+   ```
+
+4. **Akses aplikasi:**
+   - Frontend: http://localhost:5173
+   - Backend API: http://localhost:3001
 
 ## 🌐 Deployment
 
@@ -152,36 +218,40 @@ MIT
 ## 🖥️ Appearance
 
 ### Landing page
+
 <img width="3340" height="4154" alt="localhost_5173_ (1)" src="https://github.com/user-attachments/assets/6b39e105-8ee9-4a94-acd7-a295055be379" />
 
 ### Login Page
+
 <img width="1919" height="971" alt="Screenshot 2026-01-02 124433" src="https://github.com/user-attachments/assets/75e1990c-4edb-4b26-ae97-cdf0261ac820" />
 
 ### Dashboard Page
+
 <img width="3074" height="3034" alt="localhost_5173_dashboard (1)" src="https://github.com/user-attachments/assets/81d20441-f6a5-40a4-91fb-57c2ee500692" />
 
 ### SOP Page
+
 <img width="3074" height="1926" alt="localhost_5173_dashboard_pos" src="https://github.com/user-attachments/assets/31838118-9ea0-48de-95c7-5063febd3794" />
 
 ### Inventory Page
+
 <img width="3074" height="2442" alt="localhost_5173_dashboard (3)" src="https://github.com/user-attachments/assets/d74af7e2-1004-487a-99fe-f1ce2e24af02" />
 
 ### Category Page
+
 <img width="3074" height="1726" alt="localhost_5173_dashboard (4)" src="https://github.com/user-attachments/assets/02d3b746-f7fb-468c-82df-641695d43dfb" />
 
 ### Finance Page
+
 <img width="3074" height="2798" alt="localhost_5173_dashboard (5)" src="https://github.com/user-attachments/assets/2ca636f0-467e-4c7f-a483-7cad95b2671c" />
 
 ### Debt Page
+
 <img width="3074" height="3176" alt="localhost_5173_dashboard (6)" src="https://github.com/user-attachments/assets/b1e50d19-26dd-42e8-856a-fa0ec2b74e3f" />
 
 ### User Management Page (Admin only)
+
 <img width="3074" height="1700" alt="localhost_5173_dashboard_users" src="https://github.com/user-attachments/assets/90d5b0ee-f3cd-40be-9a60-5caf0b7db8f4" />
-
-
-
-
-
 
 ## 👨‍💻 Developer
 
